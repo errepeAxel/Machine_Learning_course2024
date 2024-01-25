@@ -1,0 +1,7 @@
+"0","penguin_recipe %>% "
+"0","  tidy(id = ""pca"", type = ""variance"") %>% "
+"0","  dplyr::filter(terms == ""percent variance"") %>% "
+"0","  ggplot(aes(x = component, y = value)) + "
+"0","  geom_col(fill = ""#b6dfe2"") + "
+"0","  xlim(c(0, 5)) + "
+"0","  ylab(""% of total variance"")"

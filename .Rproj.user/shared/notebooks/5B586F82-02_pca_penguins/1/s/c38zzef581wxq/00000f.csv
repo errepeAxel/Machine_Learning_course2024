@@ -1,0 +1,3 @@
+"0","# get pca loadings into wider format"
+"0","pca_wider <- penguin_pca %>% "
+"0","  tidyr::pivot_wider(names_from = component, id_cols = terms)"

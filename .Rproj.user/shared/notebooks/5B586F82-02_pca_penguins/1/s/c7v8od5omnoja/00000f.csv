@@ -1,0 +1,3 @@
+"0","ggplot(penguins, aes(x = bill_length_mm, y = bill_depth_mm, colour = species)) +"
+"0","  geom_point() +"
+"0","  scale_colour_manual(values = c(""darkorange"",""purple"",""cyan4"")) "

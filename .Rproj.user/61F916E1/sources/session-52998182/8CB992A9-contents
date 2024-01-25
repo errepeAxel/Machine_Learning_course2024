@@ -1,0 +1,81 @@
+---
+title: "tidymodels"
+author: "Axel R"
+date: "2024-01-21"
+output: html_document
+---
+
+```{r message=FALSE, warning=FALSE}
+DataExplorer::create_report(taxi)
+library(parsnip)
+```
+
+# Data Budget
+
+## The initial SPlit
+
+```{r}
+set.seed(123)
+taxi_split <- initial_split(taxi)
+taxi_split
+```
+
+## Accessing the data
+
+```{r}
+taxi_train <- training(taxi_split)
+taxi_test <- testing(taxi_split)
+```
+
+## Data splitting and spending
+
+```{r}
+set.seed(123)
+taxi_split <- initial_split(taxi, prop = 0.8)
+taxi_train <- training(taxi_split)
+taxi_test <- testing(taxi_split)
+
+nrow(taxi_train)
+#> [1] 8000
+nrow(taxi_test)
+#> [1] 2000
+```
+
+## Validation set
+
+```{r}
+set.seed(123)
+initial_validation_split(taxi, prop = c(0.6, 0.2))
+```
+
+## Stratification
+
+```{r}
+set.seed(123)
+taxi_split <- initial_split(taxi, prop = 0.8, strata = tip)
+taxi_split
+```
+
+```{r}
+# Model
+logistic_reg()
+# Engine
+logistic_reg() %>%
+  set_engine("glm")
+# 
+decision_tree() %>% 
+  set_mode("classification")
+```
+
+## Model Workflow
+
+```{r}
+tree_spec <-
+  decision_tree(cost_complexity = 0.002) %>% 
+  set_mode("classification")
+
+workflow() %>%
+  add_formula(tip ~ .) %>%
+  add_model(tree_spec) %>%
+  fit(data = taxi_train)
+```

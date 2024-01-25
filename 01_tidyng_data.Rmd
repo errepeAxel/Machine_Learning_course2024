@@ -1,0 +1,83 @@
+---
+title: "Tidying Data with dplyr and tidyr"
+author: "Axel R"
+date: "2024-01-20"
+output: html_document
+---
+# Load the Data
+Load the gene expression dataset using the readr package and view its dimensions
+
+1. What is the purpose of loading the dataset in this step?
+2. What does the **`dim()`** function do? How about `str()`
+
+```{r Load the Data}
+library(readr)
+data <- read_csv("microarray_expression_data.csv", col_names = TRUE)
+dim(data)
+```
+
+```{r}
+str(data)
+```
+
+# Understanding the Untidy Data
+
+1. What are the  main reasons that make this dataset untidy?
+2. How are the column headers (e.g., G0.05, N0.3) structured in this dataset?
+
+# Separate Multiple Variables in One Column 
+
+The NAME column contains multiple pieces of information separated by '||'. We need to split this column into separate columns. Perform this operation using the tidyr package's separate function.
+
+```{r}
+library(tidyr)
+help("separate")
+```
+
+```{r}
+data_clean <- separate(data = data, col = NAME, into = c("Name", "Function", "Details", "Mutation", "Position"), sep = "\\|\\|", remove = T)
+```
+
+
+1. What are the five new columns created after using the **`separate`** function?
+I created the columns `Name`, `Function`, `Details`,`Mutation` and `Position`
+2. What does the **`sep`** argument specify in the **`separate`** function?
+How the strings are gonna be split
+
+# Remove Whitespace
+
+Some columns have leading and trailing whitespace. Clean these columns 
+
+```{r}
+help(mutate)
+```
+
+```{r}
+library(dplyr)
+library(stringr)
+data_clean <- data_clean %>%
+  mutate(Name = str_squish(Name))
+```
+
+1. Why is it important to remove leading and trailing whitespace from columns?
+2. How is the **`mutate`** function used in this step?
+
+# Remove Unnecessary Columns
+
+Some columns are not needed for our analysis. Remove columns 'number', 'GID', 'YORF', and 'GWEIGHT' 
+
+```{r}
+data_clean <- data_clean %>%
+  select(c(-Position, -GID, -YORF, -GWEIGHT))
+# str(data_clean)
+```
+
+1. Why is it important to remove unnecessary columns in data cleaning?
+2. How do tidyselect functions work in removing columns?
+
+# Script de profesor 
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+
+```
+

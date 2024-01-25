@@ -1,0 +1,301 @@
+---
+title: "Pinguins"
+author: "Axel R"
+date: "2024-01-20"
+output: html_document
+---
+
+# Installation
+
+```{r palmerpenguins, eval=FALSE, include=FALSE}
+install.packages("palmerpenguins")
+install.packages("embed")
+```
+
+# Create a report
+
+```{r Report, message=FALSE, warning=FALSE}
+library(palmerpenguins)
+DataExplorer::create_report(penguins)
+```
+
+# PCA with penguins and recipes
+
+```{r Installation, message=FALSE, warning=FALSE, eval=FALSE}
+packages_to_install <- c("corrr", "GGally", "recipes", "tidytext", "dplyr", "tidyr", "ggplot2")
+
+# Check if the packages are already installed, if not, install them
+for (package in packages_to_install) {
+  if (!requireNamespace(package, quietly = TRUE)) {
+    install.packages(package, dependencies = TRUE)
+  } else {
+    cat(paste("Package", package, "is already installed.\n"))
+  }
+}
+```
+
+```{r Libraries, message=FALSE, warning=FALSE}
+library(palmerpenguins)
+library(corrr)
+library(GGally)
+library(recipes)
+library(tidytext)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+theme_set(theme_minimal())
+```
+
+## Correlation Matrix
+
+The palmerpenguins::penguins data contains several size measurement variables that are correlated. Let’s take a look at the correlation matrix with the corrr package and the corrr::correlate() function:
+
+```{r Correlation matrix, message=FALSE, warning=FALSE}
+# Load the corrr library
+library(corrr)
+# Select specific columns from the "penguins" dataset and compute the correlation matrix
+penguins_corr <- penguins %>%
+  dplyr::select(body_mass_g, ends_with("_mm")) %>%
+  correlate() %>%
+  rearrange()
+# Display the resulting correlation matrix
+penguins_corr
+```
+
+- `corrr` package, which provides tools for working with correlation matrices.
+- `dplyr::select` function is used to choose specific columns from the "penguins" dataset. In this case, it selects the "body_mass_g" column and all columns that end with "_mm."
+- `%>%` operator (pipe) is used to pass the selected columns to the next function, `correlate()`. This function calculates the correlation matrix for the selected columns.
+- `rearrange()` function rearranges the correlation matrix to group highly correlated variables together, making it easier to identify patterns.
+
+Body mass and flipper length appear highly correlated, but neither of the bill variables appears to be as highly correlated with any other variables.
+
+## Pairwise plot matrix
+
+We can visualize these correlations with the GGally package. The function we’ll use is called GGally::ggpairs().
+
+```{r message=FALSE, warning=FALSE}
+penguins %>%
+  select(species, body_mass_g, ends_with("_mm")) %>% 
+  GGally::ggpairs(aes(color = species),
+          columns = c("flipper_length_mm", "body_mass_g", 
+                      "bill_length_mm", "bill_depth_mm")) +
+  scale_colour_manual(values = c("darkorange","purple","cyan4")) +
+  scale_fill_manual(values = c("darkorange","purple","cyan4"))
+```
+
+## Principal component analysis (PCA)
+
+We’ll use the recipes package from tidymodels to perform a principal component analysis (PCA).
+
+First, we’ll also use a few recipe steps to preprocess the data for PCA; namely, we need to:
+
+remove any NA values,
+center all predictors, and
+scale all predictors.
+If you’ve never used the recipes package before, try this article to get started.
+
+```{r Recipies, message=FALSE, warning=FALSE}
+# Load the recipes library
+library(recipes)
+# Create a recipe for preprocessing and PCA transformation
+penguin_recipe <-
+  recipe(~., data = penguins) %>%  # Create a recipe
+  update_role(species, island, sex, year, new_role = "id") %>%  # Update roles
+  step_naomit(all_predictors()) %>%  # Handle missing values
+  step_normalize(all_predictors()) %>%  # Normalize predictors
+  step_pca(all_predictors(), id = "pca") %>%  # Apply PCA
+  prep()  # Prepare the recipe
+# Apply the recipe and extract the PCA results
+penguin_pca <- 
+  penguin_recipe %>% 
+  tidy(id = "pca") 
+# Display the PCA results
+penguin_pca
+```
+
+- `recipe` function is used to define a recipe for preprocessing and transformation. The formula ~. specifies that all columns in the "penguins" dataset should be included in the recipe.
+- `update_role` function is used to update the roles of specific variables. The roles of "species," "island," "sex," and "year" are updated to a new role called "id." This typically indicates that these variables are identifiers and should not be used as predictors in modeling.
+- `step_naomit` function is applied to remove rows with missing values in any predictor variable.
+- `step_normalize` function is applied to normalize (standardize) all predictor variables.
+- `step_pca` function is applied to perform Principal Component Analysis (PCA) on all predictor variables. The resulting principal components are assigned the identifier "pca."
+- `prep` function is used to prepare the recipe, applying the specified preprocessing steps to the "penguins" dataset.
+- `tidy` function is used to extract information about the PCA results from the prepared recipe. The argument `id = "pca"` indicates that we want information specific to the PCA step.
+
+The value column here is the loading. For each component, the value tells us the linear combination of weights for each variable that contributes to that component.
+
+This output is a tidy version of this using stats::prcomp():
+
+```{r}
+penguins %>% 
+  dplyr::select(body_mass_g, ends_with("_mm")) %>% 
+  tidyr::drop_na() %>% 
+  scale() %>% 
+  prcomp() %>%  
+  .$rotation
+```
+
+We can also apply the recipes::tidy() method to the output from recipes::step_pca() to examine how much variance each component accounts for:
+
+```{r}
+penguin_recipe %>% 
+  tidy(id = "pca", type = "variance") %>% 
+  dplyr::filter(terms == "percent variance") %>% 
+  ggplot(aes(x = component, y = value)) + 
+  geom_col(fill = "#b6dfe2") + 
+  xlim(c(0, 5)) + 
+  ylab("% of total variance")
+```
+
+## Plot PCA loadings
+
+We can plot these loadings by principal component too, following Julia Silge’s example:
+
+```{r}
+library(ggplot2)
+penguin_pca %>%
+  mutate(terms = tidytext::reorder_within(terms, 
+                                          abs(value), 
+                                          component)) %>%
+  ggplot(aes(abs(value), terms, fill = value > 0)) +
+  geom_col() +
+  facet_wrap(~component, scales = "free_y") +
+  tidytext::scale_y_reordered() +
+  scale_fill_manual(values = c("#b6dfe2", "#0A537D")) +
+  labs(
+    x = "Absolute value of contribution",
+    y = NULL, fill = "Positive?"
+  ) 
+```
+
+## Plot PCA loadings + scores
+
+We have the PCA loadings in penguin_pca. But we need them in a wide format now for plotting.
+
+```{r}
+# get pca loadings into wider format
+pca_wider <- penguin_pca %>% 
+  tidyr::pivot_wider(names_from = component, id_cols = terms)
+```
+
+We also need to go back to our prepped penguin recipe, prepped_penguins, and recipes::juice() it to get the PCA scores back.
+
+```{r}
+# define arrow style
+arrow_style <- arrow(length = unit(.05, "inches"),
+                     type = "closed")
+
+
+pca_plot <-
+  juice(penguin_recipe) %>%
+  ggplot(aes(PC1, PC2)) +
+  geom_point(aes(color = species, shape = species), 
+             alpha = 0.8, 
+             size = 2) +
+  scale_colour_manual(values = c("darkorange","purple","cyan4")) 
+
+pca_plot +
+  geom_segment(data = pca_wider,
+               aes(xend = PC1, yend = PC2), 
+               x = 0, 
+               y = 0, 
+               arrow = arrow_style) + 
+  geom_text(data = pca_wider,
+            aes(x = PC1, y = PC2, label = terms), 
+            hjust = 0, 
+            vjust = 1,
+            size = 5, 
+            color = '#0A537D') 
+```
+
+In the above plot, you can see a lot!
+
+First, if you focus on the x-axis showing us the first principal component, you can see that flipper length and body mass are very important (confirming what we saw in the above bar chart). Along this dimension, Gentoo penguins stand out clearly from the other two species. We can confirm this looking at summary statistics:
+
+```{r}
+penguins %>% 
+  group_by(species) %>% 
+  summarize(across(c(flipper_length_mm, body_mass_g), 
+                   mean, 
+                   na.rm = TRUE)) 
+```
+
+We can see this with a simple scatterplot:
+
+```{r}
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g, colour = species)) +
+  geom_point() +
+  scale_colour_manual(values = c("darkorange","purple","cyan4")) 
+```
+
+If you now focus more on the y-axis showing us the second principal component, you can see that our two bill size variables, bill_length_mm and bill_depth_mm, are very important (again, confirming what we saw in the above bar chart).
+
+Let’s do the same thing for principal component 2 and 3.
+
+```{r}
+pca_plot %+% 
+  aes(PC2, PC3) +
+  geom_segment(data = pca_wider,
+               aes(xend = PC2, yend = PC3), 
+               x = 0, 
+               y = 0, 
+               arrow = arrow_style) + 
+  geom_text(data = pca_wider,
+            aes(x = PC2, y = PC3, label = terms), 
+            hjust = 0, 
+            vjust = 1,
+            size = 5, 
+            color = '#0A537D') 
+```
+
+We see again that PC2 seems most associated with our bill size variables, bill_length_mm and bill_depth_mm. But now we can see more clearly that this dimension seems to separate Chinstrap penguins from the other two species. We can confirm this by glancing at summary statistics again by species:
+
+```{r}
+penguins %>% 
+  group_by(species) %>% 
+  summarize(across(c(bill_depth_mm, bill_length_mm), 
+                   mean, 
+                   na.rm = TRUE))
+```
+
+We can see this with a simple scatterplot too:
+
+```{r}
+ggplot(penguins, aes(x = bill_length_mm, y = bill_depth_mm, colour = species)) +
+  geom_point() +
+  scale_colour_manual(values = c("darkorange","purple","cyan4")) 
+```
+
+This is actually a pretty neat scatterplot—it highlights a perfect example of why you’d need the combination of two variables to differentiate between these three species. Comparing distributions for any single variable only differentiates one species from the other two!1
+
+## Summary
+So, Gentoos appear to just be giants, compared to the Adelie and Chinstrap penguins. While Adelie and Chinstraps are similar size-wise as measured by flipper length and body mass, Chinstraps seem to have longer bills and Adelie penguins have stubbier bills (a pug-gein, if you will?). And Gentoos, despite being large overall, have flatter bills than either of the other two species. Reminder:
+
+# UMAP with penguins
+
+```{r}
+library(embed)
+# Create a recipe for preprocessing and PCA transformation
+penguin_recipe <-
+  recipe(~., data = penguins) %>%  # Create a recipe
+  update_role(species, island, sex, year, new_role = "id") %>%  # Update roles
+  step_naomit(all_predictors()) %>%  # Handle missing values
+  step_normalize(all_predictors()) %>%  # Normalize predictors
+  step_umap(all_predictors(), id = "umap") %>%  # Apply PCA
+  prep()  # Prepare the recipe
+# Apply the recipe and extract the PCA results
+penguin_umap <- 
+  penguin_recipe %>% 
+  juice() 
+# Display the PCA results
+penguin_umap
+```
+
+```{r}
+library(ggplot2)
+ggplot(penguin_umap, aes(x = UMAP1, y = UMAP2)) +
+  geom_point(aes(color = species)) +
+  labs(title = "UMAP Plot of Penguins Dataset", x = "UMAP Dimension 1", y = "UMAP Dimension 2") +
+  theme_minimal()
+```
+
+

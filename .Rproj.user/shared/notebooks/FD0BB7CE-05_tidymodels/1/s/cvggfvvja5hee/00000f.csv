@@ -1,0 +1,2 @@
+"0","taxi_train <- training(taxi_split)"
+"0","taxi_test <- testing(taxi_split)"
