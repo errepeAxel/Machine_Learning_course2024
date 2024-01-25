@@ -78,7 +78,7 @@ Some columns have leading and trailing whitespace. Clean these columns
 help(mutate)
 ```
 
-```{r}
+```{r removing whitespaces, message=FALSE, warning=FALSE}
 library(dplyr)
 library(stringr)
 data_clean <- data_clean %>%
@@ -99,18 +99,54 @@ data_clean <- data_clean %>%
 
 # 5. Remove Unnecessary Columns
 
-Some columns are not needed for our analysis. Remove columns '`number`', '`GID`', '`YORF`', and 'GWEIGHT'
+Some columns are not needed for our analysis. Remove columns '`number`', '`GID`', '`YORF`', and '`GWEIGHT`'
 
-```{r}
+```{r Removing columns}
 data_clean <- data_clean %>%
   select(c(-Position, -GID, -YORF, -GWEIGHT))
 # str(data_clean)
 ```
 
-1.  Why is it important to remove unnecessary columns in data cleaning?
-2.  How do tidyselect functions work in removing columns?
+1.  ***Why is it important to remove unnecessary columns in data cleaning?***
 
-# Script de profesor
+    It is a crucial step in the data cleaning process as it improves the overall quality, usability, and efficiency of the dataset, making it more suitable for analysis and modeling.
+
+2.  ***How do tidyselect functions work in removing columns?***
+
+    `select()` function is used to select or drop columns from a dataframe. **`c(-Position, -GID, -YORF, -GWEIGHT)`** is a vector specifying the columns to be dropped. The **`-`** sign before each column name indicates that those columns should be removed.
+
+# **6. Reshape Data**
+
+The column headers like `G0.05`, `N0.2`, etc., represent multiple variables.
+
+1.  ***What does the `pivot_longer` function do in this step?***
+
+2.  ***What are the new columns created after using the `pivot_longer` function?***
+
+# 7. **Separate Variables in One Column**
+
+The `sample` column contains two variables: nutrient and rate.
+
+1.  ***What does the `separate` function do in this step?***
+2.  ***Why do we use `convert = TRUE` in the `separate` function?***
+
+# 8. **Visualize the Tidied Data**
+
+Visualize the tidied data using `ggplot2` for a gene of interest (e.g., "LEU1") and a biological process of interest (e.g., "leucine biosynthesis").
+
+1.  ***What is the purpose of visualizing data in this step?***
+
+2.  ***How does `ggplot2` help in creating visualizations?***
+
+# 9. **Explore Other Biological Processes**
+
+Explore another biological process (e.g., "sulfur metabolism") using ggplot2 and visualize the gene expression patterns.
+
+1.  ***Why is it important to explore different biological processes in the dataset?***
+
+2.  ***How can you use `facet_wrap` function do in this step?***
+
+# 10. Proffesor's Script
 
 ```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 
