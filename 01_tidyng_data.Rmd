@@ -2,8 +2,18 @@
 title: "Tidying Data with dplyr and tidyr"
 author: "Axel R"
 date: "2024-01-20"
-output: html_document
+output: 
+  rmdformats::robobook:
+    self_contained: true
+    thumbnails: true
+    lightbox: true
+    gallery: false
+    highlight: tango
 ---
+
+```{r rmdformats, echo=FALSE, message=FALSE, warning=FALSE}
+library(rmdformats)
+```
 
 **Remark**: The material is based on an activity assigned to us by PhD. Renan Escalante.
 
@@ -115,7 +125,7 @@ data_clean <- data_clean %>%
 
     `select()` function is used to select or drop columns from a dataframe. **`c(-Position, -GID, -YORF, -GWEIGHT)`** is a vector specifying the columns to be dropped. The **`-`** sign before each column name indicates that those columns should be removed.
 
-# **6. Reshape Data**
+# 6. Reshape Data
 
 The column headers like `G0.05`, `N0.2`, etc., represent multiple variables.
 
@@ -135,8 +145,8 @@ relig_data_clean <- relig_income %>%
 data_clean <- data_clean %>%
   pivot_longer(
     cols = starts_with(c("G0", "N0", "P0", "S0", "L0", "U0")),
-    names_to = "Info",
-    values_to = "Count"
+    names_to = "Samples",
+    values_to = "Rate"
   )
 ```
 
@@ -152,7 +162,7 @@ data_clean <- data_clean %>%
     View(data_clean)
     ```
 
-# 7. **Separate Variables in One Column**
+# 7. Separate Variables in One Column
 
 The `sample` column contains two variables: nutrient and rate.
 
@@ -160,7 +170,7 @@ The `sample` column contains two variables: nutrient and rate.
 
 2.  ***Why do we use `convert = TRUE` in the `separate` function?***
 
-# 8. **Visualize the Tidied Data**
+# 8. Visualize the Tidied Data
 
 Visualize the tidied data using `ggplot2` for a gene of interest (e.g., "LEU1") and a biological process of interest (e.g., "leucine biosynthesis").
 
@@ -168,7 +178,7 @@ Visualize the tidied data using `ggplot2` for a gene of interest (e.g., "LEU1") 
 
 2.  ***How does `ggplot2` help in creating visualizations?***
 
-# 9. **Explore Other Biological Processes**
+# 9. Explore Other Biological Processes
 
 Explore another biological process (e.g., "sulfur metabolism") using ggplot2 and visualize the gene expression patterns.
 
