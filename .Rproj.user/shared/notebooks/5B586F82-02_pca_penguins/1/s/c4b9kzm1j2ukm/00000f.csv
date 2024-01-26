@@ -1,7 +1,0 @@
-"0","penguins %>%"
-"0","  select(species, body_mass_g, ends_with(""_mm"")) %>% "
-"0","  GGally::ggpairs(aes(color = species),"
-"0","          columns = c(""flipper_length_mm"", ""body_mass_g"", "
-"0","                      ""bill_length_mm"", ""bill_depth_mm"")) +"
-"0","  scale_colour_manual(values = c(""darkorange"",""purple"",""cyan4"")) +"
-"0","  scale_fill_manual(values = c(""darkorange"",""purple"",""cyan4""))"

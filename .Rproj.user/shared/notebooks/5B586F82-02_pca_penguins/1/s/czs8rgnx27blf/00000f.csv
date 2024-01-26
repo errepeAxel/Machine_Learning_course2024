@@ -1,5 +1,0 @@
-"0","penguins %>% "
-"0","  group_by(species) %>% "
-"0","  summarize(across(c(bill_depth_mm, bill_length_mm), "
-"0","                   mean, "
-"0","                   na.rm = TRUE))"
