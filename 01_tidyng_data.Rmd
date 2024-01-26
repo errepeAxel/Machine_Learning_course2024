@@ -119,15 +119,45 @@ data_clean <- data_clean %>%
 
 The column headers like `G0.05`, `N0.2`, etc., represent multiple variables.
 
+```{r pivot_longer info, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+help("pivot_longer")
+vignette("pivot")
+relig_data <- relig_income
+relig_data_clean <- relig_income %>% 
+  pivot_longer(
+    cols = !religion, 
+    names_to = "income", 
+    values_to = "count"
+  )
+```
+
+```{r}
+data_clean <- data_clean %>%
+  pivot_longer(
+    cols = starts_with(c("G0", "N0", "P0", "S0", "L0", "U0")),
+    names_to = "Info",
+    values_to = "Count"
+  )
+```
+
 1.  ***What does the `pivot_longer` function do in this step?***
 
+    `pivot_longer()` makes datasets **longer** by increasing the number of rows and decreasing the number of columns.
+
 2.  ***What are the new columns created after using the `pivot_longer` function?***
+
+    In this case, we take all the information that came from the columns `G0.05`, `N0.2`, etc. and merge it in a new column called "`Info`" [`Info` will contain the name of the header (`G0.05`, `N0.1`, etc.), and `Count` will have the value that correspond to each]
+
+    ```{r data_pivoted, echo=TRUE}
+    View(data_clean)
+    ```
 
 # 7. **Separate Variables in One Column**
 
 The `sample` column contains two variables: nutrient and rate.
 
 1.  ***What does the `separate` function do in this step?***
+
 2.  ***Why do we use `convert = TRUE` in the `separate` function?***
 
 # 8. **Visualize the Tidied Data**
