@@ -1,6 +1,0 @@
-"0","library(dotwhisker)"
-"0",""
-"0","tidy(lm_fit_train) %>%  # Viz of Trained Model Coef"
-"0","  dwplot(dot_args = list(size = 2, color = ""black""),"
-"0","         whisker_args = list(color = ""black""),"
-"0","         vline = geom_vline(xintercept = 0, color = ""grey50"", linetype = 2))"

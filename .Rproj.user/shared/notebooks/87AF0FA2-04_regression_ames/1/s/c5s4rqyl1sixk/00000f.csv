@@ -1,6 +1,0 @@
-"0","# Apply Model to Test Data"
-"0","lm_fit_test <- last_fit(ames_wf,"
-"0","         split = data_split) "
-"0","# Collect Evaluation Metrics on Test Data"
-"0","lm_fit_test %>%"
-"0","  collect_metrics() #Evaluation on Test Data"

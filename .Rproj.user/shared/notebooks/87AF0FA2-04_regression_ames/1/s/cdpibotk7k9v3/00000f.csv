@@ -1,7 +1,0 @@
-"0","library(vip)"
-"0","# Resolve Namespace Conflict"
-"0","conflicted::conflict_prefer(""vi"", ""vip"")"
-"2","[38;5;255m[90m[conflicted][38;5;255m Removing existing preference.[39m"
-"2","[38;5;255m[90m[conflicted][38;5;255m Will prefer [1m[34mvip[38;5;255m[22m::vi over any other package.[39m"
-"0","# Extract Fit Engine Information"
-"0","mod <- lm_fit_train %>% extract_fit_engine() "

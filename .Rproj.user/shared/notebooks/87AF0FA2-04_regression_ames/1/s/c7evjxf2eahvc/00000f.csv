@@ -1,3 +1,0 @@
-"0","#mod <- lm_fit_train %>% extract_fit_engine() "
-"0","library(performance)"
-"0","mod %>% check_model()"

@@ -1,6 +1,0 @@
-"0","# Create Cross-Validation Folds"
-"0","ames_cv <- vfold_cv(ames_train, v = 10, strata = Sale_Price) # Create 10 Folds of Training Data for CV"
-"0","# Fit Model to Cross-Validation Folds and Evaluate Metrics"
-"0","lm_fit_cv <- fit_resamples(ames_wf, # Fit Model to 10 Folds of Training Data"
-"0","              resamples = ames_cv,"
-"0","              metrics = metric_set(rmse, mae, rsq))"
